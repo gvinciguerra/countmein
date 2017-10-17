@@ -1,0 +1,3 @@
+[Core]
+Name = Emotion Analyser plugin
+Module = emotion_analyser

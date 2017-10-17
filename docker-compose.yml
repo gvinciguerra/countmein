@@ -1,0 +1,13 @@
+version: "3"
+services:
+  web:
+    build: .
+    ports:
+      - "${PORT}:${PORT}"
+    depends_on:
+      - db
+    command: gunicorn -t 15 --bind :${PORT} counterserver.__main__:__hug_wsgi__
+  db:
+    image: mongo:latest
+    ports:
+      - "27017:27017"

@@ -1,0 +1,3 @@
+[Core]
+Name = Telegram Bot Plugin
+Module = telegram_bot

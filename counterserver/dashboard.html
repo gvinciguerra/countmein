@@ -1,0 +1,140 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+
+    <script>
+        lastChecked = Math.floor((new Date()).getTime() / 1000);
+        lastData = -1;
+        (function poll() {
+            setTimeout(function() {
+                $.ajax({
+                    url: "v1/events/search?from_time=" + lastChecked,
+                    type: "GET",
+                    success: function(data) {
+                        if (lastData == -1) {
+                            lastData = data.length;
+                        } else if (data.length != lastData) {
+                            location.reload();
+                        }
+                    },
+                    dataType: "json",
+                    complete: poll,
+                    timeout: 5000
+                })
+            }, 3000);
+        })();
+    </script>
+    <style>
+    body {
+        font-family: 'Helvetica Neue', sans-serif;
+        background-color: rgb(252, 252, 252);
+        margin: 15px;
+    }
+
+    img {
+        height: 150px;
+        width: : auto;
+        float: left;
+        margin: 3px;
+    }
+
+    h2 {
+        font-size: 24px;
+        font-weight: 300;
+        clear: both;
+        margin: 0 0 15px 0;
+    }
+
+    .card {
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+        background-color: white;
+        transition: 0.3s;
+        width: 40%;
+        margin: 20px;
+        padding: 20px;
+        border-radius: 2px;
+        float: left;
+    }
+
+    .card:hover {
+        box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+    }
+</style>
+</head>
+<body>
+    <div class="card">
+        <h2>Last 24h</h2>
+        <canvas id="chart1"></canvas>
+        <script>
+            var myChart = new Chart(document.getElementById("chart1"), {
+                type: 'line',
+                data: {
+                    labels: [{% for e in last_24h %}"{{ e._id|e }}",{% endfor %}],
+                    datasets: [{
+                        label: '# of events',
+                        data: [{% for e in last_24h %}{{ e.count|e }},{% endfor %}],
+                        borderColor: "rgba(239,116,111,1)",
+                        backgroundColor: "rgba(239,116,111,0.4)",
+                    }]
+                },
+                options: {
+                    scales: {
+                        xAxes: [{
+                            type: 'time',
+                            time: {
+                                unit: 'hour'
+                            }
+                        }]
+                    }
+                }
+
+            });
+        </script>
+    </div>
+
+    <div class="card">
+        <h2>Last 10 days</h2>
+        <canvas id="chart2"></canvas>
+        <script>
+            var myChart = new Chart(document.getElementById("chart2"), {
+                type: 'bar',
+                data: {
+                    labels: [{% for e in last_10d %}"{{ e._id|e }}",{% endfor %}],
+                    datasets: [{
+                        label: '# of events',
+                        data: [{% for e in last_10d %}{{ e.count|e }},{% endfor %}],
+                        borderColor: "rgba(179,204,87,1)",
+                        backgroundColor: "rgba(179,204,87,0.4)",
+                    }]
+                },
+                options: {
+                    scales: {
+                        xAxes: [{
+                            type: 'time',
+                            time: {
+                                unit: 'day'
+                            }
+                        }]
+                    }
+                }
+            });
+        </script>
+    </div>
+
+
+    <div class="card" style="width: 87%; clear: both">
+        <h2>Last images</h2>
+        {% for (i,f) in last_15faces %}
+            <a href="/events/{{ i }}">
+                <img src="data:image/jpeg;base64, {{ f }}" />
+            </a>
+        {% endfor %}
+    </div>
+</body>
+
+</html>
